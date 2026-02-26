@@ -7,6 +7,10 @@ import DiscrepancyTable from './components/DiscrepancyTable'
 import TransactionModal from './components/TransactionModal'
 import type { ReconciliationResult, Transaction } from './types'
 
+// In production (Vercel), set VITE_API_URL to the Render backend URL.
+// In local dev, the Vite proxy forwards /api → localhost:8000.
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? ''
+
 export default function App() {
   const [result, setResult] = useState<ReconciliationResult | null>(null)
   const [loading, setLoading] = useState(false)
@@ -21,7 +25,7 @@ export default function App() {
       form.append('orders_file', ordersFile)
       form.append('settlements_file', settlementsFile)
 
-      const res = await fetch('/api/reconcile', { method: 'POST', body: form })
+      const res = await fetch(`${API_BASE}/api/reconcile`, { method: 'POST', body: form })
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: res.statusText }))
         throw new Error(err.detail || 'Reconciliation failed')

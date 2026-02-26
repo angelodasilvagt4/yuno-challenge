@@ -76,6 +76,52 @@ function DropZone({
   )
 }
 
+function SampleDownload() {
+  return (
+    <div className="mb-6 p-4 bg-indigo-950/50 border border-indigo-800/60 rounded-xl">
+      <div className="flex items-start gap-3">
+        <div className="w-8 h-8 bg-indigo-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <p className="text-white text-sm font-semibold">Try with sample data</p>
+          <p className="text-slate-400 text-xs mt-0.5 mb-3">
+            25,000 real-looking transactions across MXN, BRL, IDR, KES and COP — with intentional discrepancies injected.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="/sample-data/orders.csv"
+              download="orders.csv"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              orders.csv
+              <span className="opacity-60">(1.2 MB)</span>
+            </a>
+            <a
+              href="/sample-data/settlements.csv"
+              download="settlements.csv"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              settlements.csv
+              <span className="opacity-60">(1.2 MB)</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function FileUpload({ onUpload, loading, error }: Props) {
   const [ordersFile, setOrdersFile] = useState<File | null>(null)
   const [settlementsFile, setSettlementsFile] = useState<File | null>(null)
@@ -87,11 +133,14 @@ export default function FileUpload({ onUpload, loading, error }: Props) {
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-white mb-3">Multi-Currency Reconciliation</h2>
         <p className="text-slate-400 text-base max-w-lg mx-auto">
-          Upload your order and settlement files to identify FX discrepancies, missing settlements, and suspicious patterns.
+          Upload your order and settlement files to identify FX discrepancies,
+          missing settlements, and suspicious patterns across 5 currencies.
         </p>
       </div>
 
       <div className="bg-slate-800/60 backdrop-blur border border-slate-700 rounded-2xl p-6 shadow-2xl">
+        <SampleDownload />
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <DropZone
             label="Orders CSV"
@@ -129,14 +178,14 @@ export default function FileUpload({ onUpload, loading, error }: Props) {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Reconciling...
+              Reconciling transactions…
             </span>
           ) : 'Run Reconciliation'}
         </button>
       </div>
 
       <p className="text-center text-slate-600 text-xs mt-4">
-        CSV files are processed locally — no data is stored permanently
+        Files are processed server-side and never stored permanently
       </p>
     </div>
   )

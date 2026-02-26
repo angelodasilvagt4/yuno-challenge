@@ -10,6 +10,8 @@ type FilterTab = 'all' | 'discrepancies' | 'unmatched_orders' | 'unmatched_settl
 type SortKey = keyof Transaction
 type SortDir = 'asc' | 'desc'
 
+const PAGE_SIZE_OPTIONS = [25, 50, 100]
+
 const STATUS_BADGE: Record<string, string> = {
   matched: 'bg-emerald-100 text-emerald-700',
   unmatched_order: 'bg-amber-100 text-amber-700',
@@ -32,6 +34,8 @@ export default function DiscrepancyTable({ transactions, onSelect }: Props) {
   const [tab, setTab] = useState<FilterTab>('all')
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({ key: 'order_date', dir: 'desc' })
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
 
   const counts = useMemo(() => ({
     all: transactions.length,
@@ -65,8 +69,14 @@ export default function DiscrepancyTable({ transactions, onSelect }: Props) {
     })
   }, [transactions, tab, search, sort])
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize)
+
+  const resetPage = () => setPage(1)
+
   const toggleSort = (key: SortKey) => {
     setSort((s) => s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' })
+    resetPage()
   }
 
   const SortIcon = ({ col }: { col: SortKey }) => (
@@ -84,14 +94,20 @@ export default function DiscrepancyTable({ transactions, onSelect }: Props) {
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* Header */}
       <div className="p-5 border-b border-slate-100">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
-          <h2 className="font-semibold text-slate-800">Transaction Ledger</h2>
+          <h2 className="font-semibold text-slate-800">
+            Transaction Ledger
+            <span className="ml-2 text-slate-400 font-normal text-sm">
+              {filtered.length.toLocaleString()} results
+            </span>
+          </h2>
           <input
             type="text"
-            placeholder="Search by ID, currency, processor..."
+            placeholder="Search by ID, currency, processor…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); resetPage() }}
             className="w-full sm:w-72 px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
           />
         </div>
@@ -99,7 +115,7 @@ export default function DiscrepancyTable({ transactions, onSelect }: Props) {
           {TABS.map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => setTab(key)}
+              onClick={() => { setTab(key); resetPage() }}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
                 tab === key
                   ? 'bg-indigo-600 text-white'
@@ -110,13 +126,14 @@ export default function DiscrepancyTable({ transactions, onSelect }: Props) {
               <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                 tab === key ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500'
               }`}>
-                {counts[key]}
+                {counts[key].toLocaleString()}
               </span>
             </button>
           ))}
         </div>
       </div>
 
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
@@ -143,14 +160,14 @@ export default function DiscrepancyTable({ transactions, onSelect }: Props) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filtered.length === 0 && (
+            {paginated.length === 0 && (
               <tr>
                 <td colSpan={9} className="px-4 py-10 text-center text-slate-400 text-sm">
                   No transactions match your filter.
                 </td>
               </tr>
             )}
-            {filtered.map((t) => (
+            {paginated.map((t) => (
               <tr
                 key={t.transaction_id}
                 onClick={() => onSelect(t)}
@@ -208,8 +225,73 @@ export default function DiscrepancyTable({ transactions, onSelect }: Props) {
         </table>
       </div>
 
-      <div className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">
-        Showing {filtered.length} of {transactions.length} transactions — click any row to drill down
+      {/* Pagination footer */}
+      <div className="px-5 py-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-3 text-xs text-slate-500">
+          <span>
+            Showing {filtered.length === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, filtered.length)} of{' '}
+            <span className="font-semibold text-slate-700">{filtered.length.toLocaleString()}</span> transactions
+          </span>
+          <span className="text-slate-300">|</span>
+          <label className="flex items-center gap-1.5">
+            Rows:
+            <select
+              value={pageSize}
+              onChange={(e) => { setPageSize(Number(e.target.value)); resetPage() }}
+              className="border border-slate-200 rounded px-1.5 py-0.5 text-xs text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300"
+            >
+              {PAGE_SIZE_OPTIONS.map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setPage(1)}
+            disabled={page === 1}
+            className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+          >«</button>
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+          >‹</button>
+
+          {/* Page number pills */}
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let p: number
+            if (totalPages <= 5) p = i + 1
+            else if (page <= 3) p = i + 1
+            else if (page >= totalPages - 2) p = totalPages - 4 + i
+            else p = page - 2 + i
+            return (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`px-2.5 py-1 text-xs rounded border transition-colors ${
+                  p === page
+                    ? 'bg-indigo-600 border-indigo-600 text-white'
+                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {p}
+              </button>
+            )
+          })}
+
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+          >›</button>
+          <button
+            onClick={() => setPage(totalPages)}
+            disabled={page === totalPages}
+            className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+          >»</button>
+        </div>
       </div>
     </div>
   )
