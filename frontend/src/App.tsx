@@ -65,11 +65,11 @@ export default function App() {
 
   if (!result) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 flex flex-col">
-        <header className="px-8 py-6">
+      <div className="min-h-screen bg-white flex flex-col">
+        <header className="px-8 py-5 border-b border-slate-100">
           <Logo />
         </header>
-        <main className="flex-1 flex items-center justify-center px-6 pb-12">
+        <main className="flex-1 flex items-center justify-center px-6 py-16">
           <FileUpload onUpload={handleUpload} loading={loading} error={error} />
         </main>
       </div>
@@ -80,7 +80,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-100">
       <header className="bg-slate-900 shadow-lg sticky top-0 z-30">
         <div className="max-w-screen-xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Logo light />
+          <Logo onDark />
           <div className="flex items-center gap-3">
             <button
               onClick={handleExport}
@@ -117,15 +117,17 @@ export default function App() {
   )
 }
 
-function Logo({ light = false }: { light?: boolean }) {
+function Logo({ onDark = false }: { onDark?: boolean }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-9 h-9 bg-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+      <div className="w-9 h-9 bg-indigo-500 rounded-xl flex items-center justify-center shadow-sm">
         <span className="text-white font-black text-base">Z</span>
       </div>
       <div>
-        <p className="text-white font-bold text-base leading-none">Zephyr Reconciliation</p>
-        <p className={`text-xs leading-none mt-0.5 ${light ? 'text-slate-400' : 'text-indigo-300'}`}>
+        <p className={`font-bold text-base leading-none ${onDark ? 'text-white' : 'text-slate-800'}`}>
+          Zephyr Reconciliation
+        </p>
+        <p className={`text-xs leading-none mt-0.5 ${onDark ? 'text-slate-400' : 'text-indigo-500'}`}>
           Powered by Yuno
         </p>
       </div>
