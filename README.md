@@ -2,7 +2,29 @@
 
 > Powered by Yuno — Built for Zephyr Global's finance team
 
-A full-stack tool to upload order and settlement CSVs, detect FX discrepancies, identify missing or mystery transactions, and drill into every flagged record.
+A full-stack reconciliation tool to upload order and settlement CSVs, detect FX discrepancies, identify missing or mystery transactions, and drill into every flagged record.
+
+---
+
+## Demo
+
+![Full workflow demo](docs/demo.gif)
+
+---
+
+## Screenshots
+
+| Upload | Files Selected |
+|--------|---------------|
+| ![Upload page](docs/screenshot-upload.png) | ![Files selected](docs/screenshot-files.png) |
+
+| Dashboard | Transaction Ledger |
+|-----------|-------------------|
+| ![Dashboard](docs/screenshot-dashboard.png) | ![Table](docs/screenshot-table.png) |
+
+**Drill-down modal — full calculation breakdown:**
+
+![Transaction detail modal](docs/screenshot-modal.png)
 
 ---
 
@@ -39,7 +61,7 @@ The `test-data/` directory contains ready-to-use CSV files with injected discrep
 | File | Records | Description |
 |------|---------|-------------|
 | `orders.csv` | 220 | Zephyr's order ledger (MXN, BRL, IDR, KES, COP) |
-| `settlements.csv` | 220 | Yuno settlement report (220 matched + 3 mystery) |
+| `settlements.csv` | 220 | Yuno settlement report (217 matched + 3 mystery) |
 
 Drag both files into the upload screen and click **Run Reconciliation**.
 
@@ -51,7 +73,7 @@ Drag both files into the upload screen and click **Run Reconciliation**.
 |------|-------|---------|
 | PayU calculation errors | 5 | `usd_amount_received` is off from the expected formula |
 | Xendit calculation errors | 3 | Same — settlement amount doesn't match calculation |
-| MercadoPago bad FX (BRL) | 4 | FX rate is 5–10% worse than market; internally consistent but detected via FX alert |
+| MercadoPago bad FX (BRL) | 4 | FX rate is 5–10% worse than market; detected via pattern alert |
 | Missing settlements | 3 | Orders with no matching settlement record |
 | Mystery settlements | 3 | Settlements with no matching order |
 
@@ -59,12 +81,12 @@ Drag both files into the upload screen and click **Run Reconciliation**.
 
 ## How It Works
 
-**Matching Engine**:
+**Matching Engine:**
 - Joins orders ↔ settlements by `transaction_id`
 - Computes: `expected_usd = (original_amount / fx_rate_applied) - fees_deducted`
 - Flags if `|actual_usd - expected_usd| > $0.50`
 
-**Pattern Detection**:
+**Pattern Detection:**
 - Processor anomaly: ≥2 flagged transactions from same processor
 - Currency anomaly: ≥15% discrepancy rate for a currency
 - Large discrepancy: any gap > $50
@@ -93,6 +115,9 @@ Drag both files into the upload screen and click **Run Reconciliation**.
 │   ├── orders.csv
 │   ├── settlements.csv
 │   └── generate_data.py   # Regenerate test data
+├── docs/
+│   ├── demo.gif           # Animated demo
+│   └── screenshot-*.png   # Individual screenshots
 ├── ARCHITECTURE.md
 └── README.md
 ```
