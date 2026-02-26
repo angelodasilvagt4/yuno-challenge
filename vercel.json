@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://zephyr-recon-api.onrender.com/api/:path*"
+      "destination": "https://yuno-challenge.onrender.com/api/:path*"
     }
   ]
 }
